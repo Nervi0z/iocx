@@ -31,18 +31,18 @@ def _refang(text: str) -> str:
     return text
 
 
-_IPV4 = re.compile(
+_IPV4_RE = re.compile(
     r"\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b"
 )
-_DOMAIN = re.compile(
+_DOMAIN_RE = re.compile(
     r"\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.){1,}"
     r"(?:com|net|org|io|ru|cn|de|fr|uk|nl|info|biz|xyz|top|online|site|club|tk|ml|ga|cf|gq|pw|cc|co|me|tv|us|ca|au|jp)\b",
     re.IGNORECASE,
 )
 _URL = re.compile(r"https?://[^\s\"'<>\]]+", re.IGNORECASE)
-_MD5 = re.compile(r"\b[0-9a-fA-F]{32}\b")
-_SHA1 = re.compile(r"\b[0-9a-fA-F]{40}\b")
-_SHA256 = re.compile(r"\b[0-9a-fA-F]{64}\b")
+_SHA256_RE = re.compile(r"[0-9a-fA-F]{64}")
+_SHA1_RE   = re.compile(r"[0-9a-fA-F]{40}")
+_MD5_RE    = re.compile(r"[0-9a-fA-F]{32}")
 _EMAIL = re.compile(r"\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b")
 _CVE = re.compile(r"\bCVE-\d{4}-\d{4,}\b", re.IGNORECASE)
 
@@ -76,17 +76,17 @@ def extract(text: str, include_private: bool = False) -> IOCResult:
     result.urls = list(dict.fromkeys(urls))
 
     # IPs
-    ips = _IPV4.findall(clean)
+    ips = _IPV4_RE.findall(clean)
     if not include_private:
         ips = [ip for ip in ips if not _PRIVATE.match(ip)]
     result.ips = list(dict.fromkeys(ips))
 
     # SHA256 before SHA1 before MD5 (length order prevents partial matches)
-    sha256s = _SHA256.findall(clean)
-    remaining = _SHA256.sub("", clean)
-    sha1s = _SHA1.findall(remaining)
-    remaining = _SHA1.sub("", remaining)
-    md5s = _MD5.findall(remaining)
+    sha256s = _SHA256_RE.findall(clean)
+    remaining = _SHA256_RE.sub("", clean)
+    sha1s = _SHA1_RE.findall(remaining)
+    remaining = _SHA1_RE.sub("", remaining)
+    md5s = _MD5_RE.findall(remaining)
 
     result.sha256s = list(dict.fromkeys(sha256s))
     result.sha1s = list(dict.fromkeys(sha1s))
@@ -95,7 +95,7 @@ def extract(text: str, include_private: bool = False) -> IOCResult:
     # Domains — exclude anything already in URLs and false positives
     url_hostnames = {u.split("/")[2].split(":")[0] for u in result.urls}
     domains = [
-        d for d in _DOMAIN.findall(clean)
+        d for d in _DOMAIN_RE.findall(clean)
         if d.lower() not in _FP_DOMAINS and d not in url_hostnames
     ]
     result.domains = list(dict.fromkeys(domains))

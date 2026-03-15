@@ -217,17 +217,34 @@ def url(url: str, json_mode: bool):
 @click.option("--json", "json_mode", is_flag=True, help="Output JSON.")
 @click.option("--query", is_flag=True, help="Automatically query all extracted IOCs.")
 @click.option("--private", is_flag=True, help="Include private/RFC1918 IPs.")
-def scan(file: str, json_mode: bool, query: bool, private: bool):
+@click.option("--output", "-o", "output_file", default=None, metavar="FILE",
+              help="Save report to file. Use .html for HTML report, .txt for plain text.")
+def scan(file: str, json_mode: bool, query: bool, private: bool, output_file: Optional[str]):
     """Extract IOCs from a file and optionally query them.
+
+    When --output is specified, queries every IOC automatically and saves
+    a full report with direct links to each OSINT source.
+
+    Input file accepts plain IPs, domains and defanged IOCs (malo[.]com,
+    hxxps://evil[.]ru) — one per line or mixed in free text.
 
     \b
     Examples:
-      iocx scan report.txt
+      iocx scan hosts.txt --output report.html
+      iocx scan hosts.txt --output report.txt
       iocx scan incident.log --query
-      iocx scan advisory.pdf --json
+      iocx scan report.txt --json
     """
     from pathlib import Path
+    from . import reporter
+
     text = Path(file).read_text(encoding="utf-8", errors="replace")
+
+    # If --output is set, treat the file as a target list and generate a report
+    if output_file:
+        _run_report(text, output_file, private)
+        return
+
     result = extract.extract(text, include_private=private)
     output.render_scan_summary(result, json_mode=json_mode)
 
@@ -258,6 +275,87 @@ def scan(file: str, json_mode: bool, query: bool, private: bool):
                 lambda v=dom: sources.virustotal_domain(v),
             )
             output.render_domain(dom, r)
+
+
+def _run_report(text: str, output_file: str, include_private: bool) -> None:
+    """Query all IOCs from text and write an HTML or TXT report."""
+    from pathlib import Path
+    from . import reporter
+
+    # Parse targets — one per line, refang automatically
+    lines = [extract._refang(l.strip()) for l in text.splitlines() if l.strip() and not l.startswith("#")]
+
+    # Classify each line
+    targets: list[tuple[str, str]] = []
+    for line in lines:
+        if extract._IPV4_RE.fullmatch(line):
+            if include_private or not extract._PRIVATE.match(line):
+                targets.append((line, "ip"))
+        elif extract._SHA256_RE.fullmatch(line):
+            targets.append((line, "sha256"))
+        elif extract._SHA1_RE.fullmatch(line) and len(line) == 40:
+            targets.append((line, "sha1"))
+        elif extract._MD5_RE.fullmatch(line) and len(line) == 32:
+            targets.append((line, "md5"))
+        elif extract._DOMAIN_RE.search(line):
+            dom = extract._DOMAIN_RE.search(line)
+            if dom:
+                targets.append((dom.group(), "domain"))
+        # skip unrecognized lines silently
+
+    if not targets:
+        output.error("No recognizable IOCs found in input file.")
+        return
+
+    console.print(f"[dim]Loaded {len(targets)} targets — querying...[/dim]")
+    rows = []
+
+    for ioc, ioc_type in targets:
+        console.print(f"[dim]  {ioc_type:<7} {ioc}[/dim]")
+
+        if ioc_type == "ip":
+            results = _parallel(
+                lambda v=ioc: sources.ip_api(v),
+                lambda v=ioc: sources.abuseipdb(v),
+                lambda v=ioc: sources.virustotal_ip(v),
+                lambda v=ioc: sources.shodan_ip(v),
+            )
+        elif ioc_type == "domain":
+            results = _parallel(
+                lambda v=ioc: sources.dns_resolve(v),
+                lambda v=ioc: sources.urlhaus_domain(v),
+                lambda v=ioc: sources.virustotal_domain(v),
+            )
+        elif ioc_type in ("md5", "sha1", "sha256"):
+            results = _parallel(
+                lambda v=ioc: sources.malwarebazaar_hash(v),
+                lambda v=ioc: sources.virustotal_hash(v),
+            )
+        else:
+            results = []
+
+        rows.append(reporter.build_row(ioc, ioc_type, results))
+
+    # Generate report
+    out_path = Path(output_file)
+    if out_path.suffix.lower() == ".html":
+        content = reporter.generate_html(rows)
+    else:
+        content = reporter.generate_txt(rows)
+
+    out_path.write_text(content, encoding="utf-8")
+
+    high = sum(1 for r in rows if r["risk_label"] == "HIGH")
+    medium = sum(1 for r in rows if r["risk_label"] == "MEDIUM")
+    clean = sum(1 for r in rows if r["risk_label"] == "CLEAN")
+
+    console.print(f"\n[green]Report saved to {output_file}[/green]")
+    console.print(
+        f"  {len(rows)} targets · "
+        f"[bold red]{high} HIGH[/bold red] · "
+        f"[bold yellow]{medium} MEDIUM[/bold yellow] · "
+        f"[green]{clean} CLEAN[/green]"
+    )
 
 
 # ---------------------------------------------------------------------------
