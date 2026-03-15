@@ -1,0 +1,245 @@
+<svg viewBox="0 0 860 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="iocx — IOC triage at terminal speed">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&amp;display=swap');
+      .mono { font-family: 'JetBrains Mono', 'Courier New', monospace; }
+
+      /* Scanline */
+      .scan { animation: scan 5s linear infinite; }
+      @keyframes scan {
+        0%   { transform: translateY(-30px); opacity: 0; }
+        5%   { opacity: 1; }
+        95%  { opacity: 1; }
+        100% { transform: translateY(250px); opacity: 0; }
+      }
+
+      /* Top flow line */
+      .flow { stroke-dasharray: 860; stroke-dashoffset: 860; animation: flow 1.4s ease forwards 0.1s; }
+      @keyframes flow { to { stroke-dashoffset: 0; } }
+
+      /* Corner brackets */
+      .btl { stroke-dasharray: 70; stroke-dashoffset: 70; animation: draw 0.5s ease forwards 0.3s; }
+      .btr { stroke-dasharray: 70; stroke-dashoffset: 70; animation: draw 0.5s ease forwards 0.5s; }
+      .bbl { stroke-dasharray: 70; stroke-dashoffset: 70; animation: draw 0.5s ease forwards 0.7s; }
+      .bbr { stroke-dasharray: 70; stroke-dashoffset: 70; animation: draw 0.5s ease forwards 0.9s; }
+      @keyframes draw { to { stroke-dashoffset: 0; } }
+
+      /* Side bars (like in Miguel's banner) */
+      .sbl { stroke-dasharray: 120; stroke-dashoffset: 120; animation: draw 0.8s ease forwards 0.4s; }
+      .sbr { stroke-dasharray: 120; stroke-dashoffset: 120; animation: draw 0.8s ease forwards 0.6s; }
+
+      /* Text cascade */
+      .t0 { opacity: 0; animation: up 0.45s ease forwards 0.6s; }
+      .t1 { opacity: 0; animation: up 0.45s ease forwards 0.85s; }
+      .t2 { opacity: 0; animation: up 0.45s ease forwards 1.05s; }
+      .t3 { opacity: 0; animation: up 0.45s ease forwards 1.25s; }
+      .t4 { opacity: 0; animation: up 0.45s ease forwards 1.45s; }
+      .t5 { opacity: 0; animation: up 0.45s ease forwards 1.65s; }
+      @keyframes up {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Title glow — matches Miguel's cyan/purple glow */
+      .glow { animation: glow 3s ease-in-out infinite alternate; }
+      @keyframes glow {
+        from { filter: drop-shadow(0 0 8px #7C3AED99) drop-shadow(0 0 20px #7C3AED44); }
+        to   { filter: drop-shadow(0 0 12px #06B6D4bb) drop-shadow(0 0 30px #06B6D466); }
+      }
+
+      /* Particles */
+      .p1 { animation: f1 7s ease-in-out infinite; }
+      .p2 { animation: f2 9s ease-in-out infinite 1s; }
+      .p3 { animation: f1 6s ease-in-out infinite 2s; }
+      .p4 { animation: f2 8s ease-in-out infinite 0.5s; }
+      .p5 { animation: f1 10s ease-in-out infinite 3s; }
+      .p6 { animation: f2 7s ease-in-out infinite 1.5s; }
+      @keyframes f1 { 0%,100%{transform:translateY(0);opacity:.3} 50%{transform:translateY(-10px);opacity:.9} }
+      @keyframes f2 { 0%,100%{transform:translateY(0);opacity:.2} 50%{transform:translateY(-14px);opacity:.8} }
+
+      /* Waveform bars (left side — like Miguel's) */
+      .w1 { animation: wave 1.8s ease-in-out infinite; }
+      .w2 { animation: wave 2.2s ease-in-out infinite 0.2s; }
+      .w3 { animation: wave 1.5s ease-in-out infinite 0.4s; }
+      .w4 { animation: wave 2.8s ease-in-out infinite 0.1s; }
+      .w5 { animation: wave 1.9s ease-in-out infinite 0.6s; }
+      .w6 { animation: wave 2.4s ease-in-out infinite 0.3s; }
+      @keyframes wave {
+        0%,100% { transform: scaleY(1); opacity: 0.5; }
+        50%     { transform: scaleY(1.8); opacity: 1; }
+      }
+
+      /* Blink dots */
+      .b1 { animation: blink 2s step-end infinite; }
+      .b2 { animation: blink 2s step-end infinite 0.7s; }
+      .b3 { animation: blink 2s step-end infinite 1.4s; }
+      @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+      /* Tag pulse */
+      .tag { animation: tpulse 4s ease-in-out infinite alternate; }
+      @keyframes tpulse { from{opacity:.65} to{opacity:1} }
+    </style>
+
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#020810"/>
+      <stop offset="100%" stop-color="#030c1c"/>
+    </linearGradient>
+    <linearGradient id="title" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#a78bfa"/>
+      <stop offset="50%"  stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="flowg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#7C3AED" stop-opacity="0"/>
+      <stop offset="35%"  stop-color="#7C3AED"/>
+      <stop offset="65%"  stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="scan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#06B6D4" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#06B6D4" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Waveform bar gradient -->
+    <linearGradient id="wg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="860" height="220" fill="url(#bg)" rx="4"/>
+
+  <!-- Grid -->
+  <g opacity="0.28" stroke="#0d1f3c" stroke-width="1">
+    <line x1="0" y1="44"  x2="860" y2="44"/>
+    <line x1="0" y1="88"  x2="860" y2="88"/>
+    <line x1="0" y1="132" x2="860" y2="132"/>
+    <line x1="0" y1="176" x2="860" y2="176"/>
+    <line x1="43"  y1="0" x2="43"  y2="220"/>
+    <line x1="86"  y1="0" x2="86"  y2="220"/>
+    <line x1="129" y1="0" x2="129" y2="220"/>
+    <line x1="172" y1="0" x2="172" y2="220"/>
+    <line x1="215" y1="0" x2="215" y2="220"/>
+    <line x1="258" y1="0" x2="258" y2="220"/>
+    <line x1="301" y1="0" x2="301" y2="220"/>
+    <line x1="344" y1="0" x2="344" y2="220"/>
+    <line x1="387" y1="0" x2="387" y2="220"/>
+    <line x1="430" y1="0" x2="430" y2="220"/>
+    <line x1="473" y1="0" x2="473" y2="220"/>
+    <line x1="516" y1="0" x2="516" y2="220"/>
+    <line x1="559" y1="0" x2="559" y2="220"/>
+    <line x1="602" y1="0" x2="602" y2="220"/>
+    <line x1="645" y1="0" x2="645" y2="220"/>
+    <line x1="688" y1="0" x2="688" y2="220"/>
+    <line x1="731" y1="0" x2="731" y2="220"/>
+    <line x1="774" y1="0" x2="774" y2="220"/>
+    <line x1="817" y1="0" x2="817" y2="220"/>
+  </g>
+
+  <!-- Scanline -->
+  <rect class="scan" x="0" y="0" width="860" height="40" fill="url(#scan)"/>
+
+  <!-- Top flow line -->
+  <line class="flow" x1="0" y1="3" x2="860" y2="3" stroke="url(#flowg)" stroke-width="2"/>
+
+  <!-- Left side vertical bar (like Miguel's) -->
+  <line class="sbl" x1="22" y1="30" x2="22" y2="150" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Right side vertical bar -->
+  <line class="sbr" x1="838" y1="30" x2="838" y2="150" stroke="#06B6D4" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Waveform bars — left (like Miguel's equalizer) -->
+  <g transform="translate(30, 80)" style="transform-origin: 30px 80px;">
+    <rect class="w1" x="0"  y="-15" width="3" height="30" fill="url(#wg)" rx="1" style="transform-origin: 1.5px 0px;"/>
+    <rect class="w2" x="6"  y="-25" width="3" height="50" fill="url(#wg)" rx="1" style="transform-origin: 7.5px 0px;"/>
+    <rect class="w3" x="12" y="-10" width="3" height="20" fill="url(#wg)" rx="1" style="transform-origin: 13.5px 0px;"/>
+    <rect class="w4" x="18" y="-30" width="3" height="60" fill="url(#wg)" rx="1" style="transform-origin: 19.5px 0px;"/>
+    <rect class="w5" x="24" y="-20" width="3" height="40" fill="url(#wg)" rx="1" style="transform-origin: 25.5px 0px;"/>
+    <rect class="w6" x="30" y="-12" width="3" height="24" fill="url(#wg)" rx="1" style="transform-origin: 31.5px 0px;"/>
+  </g>
+
+  <!-- Waveform bars — right -->
+  <g transform="translate(800, 80)">
+    <rect class="w3" x="0"  y="-20" width="3" height="40" fill="url(#wg)" rx="1" style="transform-origin: 1.5px 0px;"/>
+    <rect class="w1" x="6"  y="-12" width="3" height="24" fill="url(#wg)" rx="1" style="transform-origin: 7.5px 0px;"/>
+    <rect class="w4" x="12" y="-28" width="3" height="56" fill="url(#wg)" rx="1" style="transform-origin: 13.5px 0px;"/>
+    <rect class="w2" x="18" y="-16" width="3" height="32" fill="url(#wg)" rx="1" style="transform-origin: 19.5px 0px;"/>
+    <rect class="w5" x="24" y="-22" width="3" height="44" fill="url(#wg)" rx="1" style="transform-origin: 25.5px 0px;"/>
+    <rect class="w6" x="30" y="-10" width="3" height="20" fill="url(#wg)" rx="1" style="transform-origin: 31.5px 0px;"/>
+  </g>
+
+  <!-- Corner brackets -->
+  <path class="btl" d="M 18 28 L 18 10 L 36 10" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="btr" d="M 842 28 L 842 10 L 824 10" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="bbl" d="M 18 192 L 18 210 L 36 210" fill="none" stroke="#06B6D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="bbr" d="M 842 192 L 842 210 L 824 210" fill="none" stroke="#06B6D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Particles -->
+  <circle class="p1" cx="12" cy="60"  r="2"   fill="#7C3AED" opacity="0.7"/>
+  <circle class="p2" cx="16" cy="100" r="1.5" fill="#06B6D4" opacity="0.6"/>
+  <circle class="p3" cx="10" cy="145" r="2"   fill="#7C3AED" opacity="0.5"/>
+  <circle class="p4" cx="848" cy="55"  r="1.5" fill="#06B6D4" opacity="0.6"/>
+  <circle class="p5" cx="845" cy="110" r="2"   fill="#7C3AED" opacity="0.5"/>
+  <circle class="p6" cx="850" cy="160" r="1.5" fill="#06B6D4" opacity="0.7"/>
+
+  <!-- Blink dots (top status) -->
+  <circle class="b1" cx="76" cy="18" r="3" fill="#22C55E"/>
+  <circle class="b2" cx="90" cy="18" r="3" fill="#22C55E"/>
+  <circle class="b3" cx="104" cy="18" r="3" fill="#22C55E"/>
+
+  <!-- Prompt line -->
+  <text class="t0 mono" x="75" y="50" fill="#94A3B8" font-size="11.5">
+    ~/tools/iocx
+  </text>
+  <text class="t0 mono" x="185" y="50" fill="#7C3AED" font-size="11.5">$</text>
+  <text class="t0 mono" x="198" y="50" fill="#22C55E" font-size="11.5">iocx ip 185.220.101.45</text>
+
+  <!-- Main title — glow matching Miguel's -->
+  <g class="glow t1">
+    <text class="mono" x="75" y="110" fill="url(#title)"
+          font-size="58" font-weight="800" letter-spacing="-1">
+      iocx
+    </text>
+  </g>
+
+  <!-- Tagline -->
+  <text class="t2 mono" x="75" y="138" fill="#94A3B8" font-size="12.5" letter-spacing="0.5">
+    IOC triage at terminal speed  ·  IP · hash · domain · url · decode
+  </text>
+
+  <!-- Divider -->
+  <line class="t3" x1="75" y1="155" x2="820" y2="155" stroke="#7C3AED" stroke-width="1" opacity="0.35"/>
+
+  <!-- Tags — matching Miguel's pill style -->
+  <g class="t4 tag mono" font-size="11">
+    <rect x="75"  y="164" width="100" height="22" rx="11" fill="none" stroke="#7C3AED" stroke-width="1" opacity="0.8"/>
+    <circle cx="92" cy="175" r="4" fill="#7C3AED"/>
+    <text x="102" y="179" fill="#E6EDF3">VirusTotal</text>
+
+    <rect x="185" y="164" width="95" height="22" rx="11" fill="none" stroke="#06B6D4" stroke-width="1" opacity="0.8"/>
+    <circle cx="202" cy="175" r="4" fill="#06B6D4"/>
+    <text x="212" y="179" fill="#E6EDF3">AbuseIPDB</text>
+
+    <rect x="290" y="164" width="72" height="22" rx="11" fill="none" stroke="#22C55E" stroke-width="1" opacity="0.8"/>
+    <circle cx="307" cy="175" r="4" fill="#22C55E"/>
+    <text x="317" y="179" fill="#E6EDF3">Shodan</text>
+
+    <rect x="372" y="164" width="110" height="22" rx="11" fill="none" stroke="#7C3AED" stroke-width="1" opacity="0.8"/>
+    <circle cx="389" cy="175" r="4" fill="#7C3AED"/>
+    <text x="399" y="179" fill="#E6EDF3">MalwareBazaar</text>
+
+    <rect x="492" y="164" width="90" height="22" rx="11" fill="none" stroke="#06B6D4" stroke-width="1" opacity="0.8"/>
+    <circle cx="509" cy="175" r="4" fill="#06B6D4"/>
+    <text x="519" y="179" fill="#E6EDF3">URLhaus</text>
+
+    <rect x="592" y="164" width="68" height="22" rx="11" fill="none" stroke="#22C55E" stroke-width="1" opacity="0.8"/>
+    <circle cx="609" cy="175" r="4" fill="#22C55E"/>
+    <text x="619" y="179" fill="#E6EDF3">pip install</text>
+  </g>
+
+  <!-- Bottom tagline -->
+  <text class="t5 mono" x="75" y="210" fill="#475569" font-size="10.5" letter-spacing="0.3">
+    find it  //  triage it  //  chase the fix
+  </text>
+</svg>

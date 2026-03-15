@@ -1,0 +1,13 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+~/.iocx/config.json
+.DS_Store
+.pytest_cache/
+.coverage
+htmlcov/
