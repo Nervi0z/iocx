@@ -19,7 +19,7 @@ from typing import Optional
 import click
 from rich.console import Console
 
-from . import config, decode, extract, output, sources
+from . import config, decode, extract, output, sources, ui
 
 console = Console()
 
@@ -279,11 +279,13 @@ def scan(file: str, json_mode: bool, query: bool, private: bool, output_file: Op
 
 def _run_report(text: str, output_file: str, include_private: bool) -> None:
     """Query all IOCs from text and write an HTML or TXT report."""
+    import time
     from pathlib import Path
     from . import reporter
 
     # Parse targets — one per line, refang automatically
-    lines = [extract._refang(l.strip()) for l in text.splitlines() if l.strip() and not l.startswith("#")]
+    lines = [extract._refang(l.strip()) for l in text.splitlines()
+             if l.strip() and not l.startswith("#")]
 
     # Classify each line
     targets: list[tuple[str, str]] = []
@@ -301,17 +303,22 @@ def _run_report(text: str, output_file: str, include_private: bool) -> None:
             dom = extract._DOMAIN_RE.search(line)
             if dom:
                 targets.append((dom.group(), "domain"))
-        # skip unrecognized lines silently
 
     if not targets:
         output.error("No recognizable IOCs found in input file.")
         return
 
-    console.print(f"[dim]Loaded {len(targets)} targets — querying...[/dim]")
-    rows = []
+    # Print banner
+    import os
+    source_name = os.path.basename(output_file.replace("--output", "").strip()) if output_file else "stdin"
+    # get the actual input filename from context — use a short label
+    ui.print_banner(len(targets), "hosts.txt")
 
-    for ioc, ioc_type in targets:
-        console.print(f"[dim]  {ioc_type:<7} {ioc}[/dim]")
+    rows = []
+    scan_start = time.monotonic()
+
+    for idx, (ioc, ioc_type) in enumerate(targets, start=1):
+        t0 = time.monotonic()
 
         if ioc_type == "ip":
             results = _parallel(
@@ -334,28 +341,26 @@ def _run_report(text: str, output_file: str, include_private: bool) -> None:
         else:
             results = []
 
-        rows.append(reporter.build_row(ioc, ioc_type, results))
+        elapsed = time.monotonic() - t0
+        row = reporter.build_row(ioc, ioc_type, results)
+        rows.append(row)
 
-    # Generate report
+        finding = ui.top_finding(ioc_type, results)
+        ui.print_progress_line(idx, len(targets), ioc, ioc_type,
+                               row["risk_label"], finding, elapsed)
+
+    total_time = time.monotonic() - scan_start
+
+    # Summary table
+    ui.print_summary_table(rows, total_time, output_file=output_file)
+
+    # Generate report file
     out_path = Path(output_file)
     if out_path.suffix.lower() == ".html":
         content = reporter.generate_html(rows)
     else:
         content = reporter.generate_txt(rows)
-
     out_path.write_text(content, encoding="utf-8")
-
-    high = sum(1 for r in rows if r["risk_label"] == "HIGH")
-    medium = sum(1 for r in rows if r["risk_label"] == "MEDIUM")
-    clean = sum(1 for r in rows if r["risk_label"] == "CLEAN")
-
-    console.print(f"\n[green]Report saved to {output_file}[/green]")
-    console.print(
-        f"  {len(rows)} targets · "
-        f"[bold red]{high} HIGH[/bold red] · "
-        f"[bold yellow]{medium} MEDIUM[/bold yellow] · "
-        f"[green]{clean} CLEAN[/green]"
-    )
 
 
 # ---------------------------------------------------------------------------
