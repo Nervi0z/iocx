@@ -1,0 +1,200 @@
+Metadata-Version: 2.4
+Name: iocx
+Version: 0.1.0
+Summary: IOC triage at terminal speed — IP, hash, domain, URL lookup across multiple threat intel sources
+Author-email: Nervi0z <nervi0z@users.noreply.github.com>
+License: MIT
+Project-URL: Homepage, https://github.com/Nervi0z/iocx
+Project-URL: Bug Tracker, https://github.com/Nervi0z/iocx/issues
+Keywords: security,threat-intel,soc,ioc,blue-team,cli
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Security
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: click>=8.1
+Requires-Dist: requests>=2.31
+Requires-Dist: rich>=13.7
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1; extra == "dev"
+Requires-Dist: black>=24.0; extra == "dev"
+Requires-Dist: flake8>=7.0; extra == "dev"
+Dynamic: license-file
+
+<div align="center">
+  <img src="assets/img/header.svg" alt="iocx" width="100%"/>
+</div>
+
+<br/>
+
+<div align="center">
+
+[![PyPI](https://img.shields.io/pypi/v/iocx?color=%237C3AED&label=pypi&logo=python&logoColor=white)](https://pypi.org/project/iocx/)
+[![Python](https://img.shields.io/badge/python-3.10%2B-06B6D4?logo=python&logoColor=white)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-22C55E)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/Nervi0z/iocx?color=%237C3AED)](https://github.com/Nervi0z/iocx/stargazers)
+
+</div>
+
+<br/>
+
+Query IPs, hashes, domains and URLs across multiple threat intel sources with a single command. No mandatory setup. Works immediately with open sources; add API keys to unlock VirusTotal, AbuseIPDB and Shodan.
+
+```
+$ iocx ip 185.220.101.45
+```
+
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  185.220.101.45                              HIGH RISK  ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                         ┃
+┃  Country    Netherlands (NL)                            ┃
+┃  ASN        AS50673 Serverius                           ┃
+┃  AbuseIPDB  97/100  ████████████████████  2,847 reports ┃
+┃             TOR EXIT NODE                               ┃
+┃  Last seen  2024-03-15 02:14:33                         ┃
+┃  VT         52/94 engines flagged                       ┃
+┃  Shodan     22  80  443  9001                           ┃
+┃  Tags        TOR   C2   SCANNER   BRUTE-FORCE           ┃
+┃                                                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
+---
+
+## Install
+
+```bash
+pip install iocx
+```
+
+That's it. No config required.
+
+---
+
+## Commands
+
+```bash
+iocx ip 185.220.101.45                    # IP reputation
+iocx hash d41d8cd98f00b204e9800998ecf8427e  # MD5 / SHA1 / SHA256
+iocx domain evil-c2.ru                    # domain reputation + DNS
+iocx url "hxxps://malware[.]ru/drop.exe"  # URL lookup (defanged OK)
+iocx scan report.txt                      # extract all IOCs from a file
+iocx scan report.txt --query              # extract + query each IOC
+iocx decode SGVsbG8gV29ybGQ=             # auto-detect encoding
+iocx decode "eyJhbGciOiJIUzI1NiJ9..."    # JWT, hex, base64, URL, ROT13
+```
+
+All commands accept `--json` for machine-readable output.
+
+---
+
+## API keys (optional)
+
+Without keys, iocx uses open-source feeds: ip-api, MalwareBazaar, URLhaus, public DNS. With keys, VirusTotal, AbuseIPDB and Shodan activate automatically.
+
+```bash
+iocx config set virustotal YOUR_KEY
+iocx config set abuseipdb  YOUR_KEY
+iocx config set shodan      YOUR_KEY
+iocx config list
+```
+
+Keys are stored in `~/.iocx/config.json` (chmod 600). Environment variables take priority: `VT_API_KEY`, `ABUSEIPDB_API_KEY`, `SHODAN_API_KEY`.
+
+---
+
+## Sources
+
+| Source | Type | Key required |
+|--------|------|:---:|
+| [ip-api.com](https://ip-api.com) | Geolocation, ASN, hosting/proxy detection | No |
+| [AbuseIPDB](https://www.abuseipdb.com) | IP reputation, abuse reports | Yes |
+| [VirusTotal](https://www.virustotal.com) | IP / hash / domain / URL reputation | Yes |
+| [Shodan](https://www.shodan.io) | Open ports, banners, CVEs, tags | Yes |
+| [MalwareBazaar](https://bazaar.abuse.ch) | Hash lookup, malware family, tags | No |
+| [URLhaus](https://urlhaus.abuse.ch) | URL and domain malware distribution | No |
+| DNS | System resolver | No |
+
+---
+
+## IOC extraction
+
+```bash
+$ iocx scan incident_report.txt
+
+  IOC Extraction Results
+  Type      Count   Values
+  IP            3   185.220.101.45  10.0.0.5  ...
+  Domain        2   evil-c2.ru  update-service.net
+  SHA256        1   44d88612fea8a8f36de82e127...
+  CVE           1   CVE-2021-44228
+
+$ iocx scan incident_report.txt --query
+# Queries every extracted IOC automatically
+```
+
+Handles defanged IOCs: `hxxps://`, `[.]`, `(.)`, `[dot]`.
+
+---
+
+## Decode
+
+```bash
+$ iocx decode SGVsbG8gV29ybGQ=
+
+  base64              Hello World
+  
+$ iocx decode "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.abc123"
+
+  jwt / header        {"alg": "HS256"}
+  jwt / payload       {"sub": "test"}
+  jwt / signature     abc123 (not verified)
+```
+
+Detects automatically: base64, base64url, double-encoded base64, hex, URL encoding, JWT, ROT13.
+
+---
+
+## JSON output
+
+Every command supports `--json` for piping:
+
+```bash
+iocx ip 1.2.3.4 --json | jq '.results[] | select(.source == "AbuseIPDB") | .score'
+iocx scan report.txt --json | jq '.ips'
+iocx decode SGVsbG8= --json
+```
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Run tests with `pytest`. Open an issue before large changes.
+
+New sources are welcome — add a function in `src/iocx/sources.py`, wire it into the relevant command in `cli.py`, and add tests.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+<div align="center">
+  <sub>
+    <a href="https://github.com/Nervi0z">@Nervi0z</a> · Security Analyst · VAR Group Madrid ·
+    <em>find it // triage it // chase the fix</em>
+  </sub>
+</div>

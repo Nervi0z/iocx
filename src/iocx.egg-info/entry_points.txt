@@ -1,0 +1,2 @@
+[console_scripts]
+iocx = iocx.cli:main
